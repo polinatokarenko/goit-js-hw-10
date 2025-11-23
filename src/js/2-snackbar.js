@@ -1,25 +1,44 @@
-const storageKey = "feedback-form-state";
-const formData = { email: "", message: "" };
+import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.min.css";
 
-const form = document.querySelector("form");
+const form = document.querySelector('.form');
+const delayInput = document.querySelector('input[type="number"]');
 
-form.addEventListener("input", (event) => {
-    formData[event.target.name] = event.target.value.trim();
-    localStorage.setItem(storageKey, JSON.stringify(formData));
-})
+form.addEventListener("submit", event => {
+    event.preventDefault();
 
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const email = form.querySelector("input[name='email']").value.trim();
-  const message = form.querySelector("textarea[name='message']").value.trim();
-    if (!email || !message) {
-        alert("Fill please all fields");
+    const selected = document.querySelector('input[name="state"]:checked');
+
+    if (!selected) {
+        iziToast.error({
+            message: "Please select promise state!"
+        });
         return;
-    } else {
-        console.log(formData);
-        form.reset();
-        localStorage.removeItem("feedback-form-state");
-        formData.email = "";
-        formData.message = "";
     }
+
+    const delay = Number(delayInput.value);
+
+    const promise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (selected.value === "fulfilled") {
+                resolve(delay);
+            } else {
+                reject(delay);
+            }
+        }, delay);
+    });
+
+    promise
+        .then(() => {
+            iziToast.show({
+                message: `✅ Fulfilled promise in ${delay}ms`
+            });
+        })
+        .catch(() => {
+            iziToast.show({
+                message: `❌ Rejected promise in ${delay}ms`
+            });
+        });
+
+    form.reset();
 });
